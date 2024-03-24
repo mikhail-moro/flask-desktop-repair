@@ -1,11 +1,10 @@
 from threading import Thread
 
-import PySide2.QtCore as core
-import PySide2.QtWidgets as core_widgets
-import PySide2.QtWebEngine as web_engine
-import PySide2.QtWebEngineWidgets as web_widgets
-import PySide2.QtGui as gui
-
+import PySide6.QtCore as core
+import PySide6.QtWidgets as core_widgets
+import PySide6.QtWebEngineWidgets as web_widgets
+import PySide6.QtWebEngineCore as web_core
+import PySide6.QtGui as gui
 
 default_url = "127.0.0.1"
 
@@ -36,16 +35,12 @@ class WebUI(object):
 
     def run_gui(self):
         self.view.load(core.QUrl(self.url))
+        self.view.page().settings().setAttribute(web_core.QWebEngineSettings.WebAttribute.PluginsEnabled, True)
+        self.view.page().settings().setAttribute(web_core.QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
 
-        change_setting = self.view.page().settings().setAttribute
-        settings = web_widgets.QWebEngineSettings
-        change_setting(settings.LocalStorageEnabled, True)
-        change_setting(settings.PluginsEnabled, True)
-
-        # TODO: These settings aren't implemented in QWebEngineSettings (yet)
-        #change_setting(settings.DeveloperExtrasEnabled, True)
-        #change_setting(settings.OfflineStorageDatabaseEnabled, True)
-        #change_setting(settings.OfflineWebApplicationCacheEnabled, True)
+        #  change_setting(settings.DeveloperExtrasEnabled, True)
+        #  change_setting(settings.OfflineStorageDatabaseEnabled, True)
+        #  change_setting(settings.OfflineWebApplicationCacheEnabled, True)
 
         self.view.showMaximized()
 
@@ -58,7 +53,8 @@ class WebUI(object):
             pythoncom.CoInitialize()
         self.flask_app.run(debug=debug, host=host, port=port, use_reloader=False)
 
-class CustomWebEnginePage(web_widgets.QWebEnginePage):
+
+class CustomWebEnginePage(web_core.QWebEnginePage):
     def createWindow(self, _type):
         page = CustomWebEnginePage(self)
         page.urlChanged.connect(self.open_browser)
